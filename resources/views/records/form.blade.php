@@ -88,5 +88,20 @@
                 Save Record
             </button>
         </form>
+
+        @if (($hasRecord ?? false) === true)
+            <form
+                method="POST"
+                action="{{ route('records.destroy', ['date' => $date]) }}"
+                onsubmit="return confirm('Delete record for {{ $date }}? This cannot be undone.');"
+                class="flex justify-end"
+            >
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="rounded border border-rose-300 px-4 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50">
+                    Delete This Day
+                </button>
+            </form>
+        @endif
     </div>
 @endsection

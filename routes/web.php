@@ -30,6 +30,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/records/{date}', [RecordController::class, 'update'])
         ->where('date', '\d{4}-\d{2}-\d{2}')
         ->name('records.update');
+    Route::delete('/records/{date}', [RecordController::class, 'destroy'])
+        ->where('date', '\d{4}-\d{2}-\d{2}')
+        ->name('records.destroy');
     Route::post('/records/{date}/images', [RecordImageController::class, 'store'])
         ->where('date', '\d{4}-\d{2}-\d{2}')
         ->name('records.images.store');

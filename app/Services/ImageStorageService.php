@@ -28,4 +28,21 @@ class ImageStorageService
             'path' => $path,
         ];
     }
+
+    /**
+     * @param  array<int, string>  $paths
+     */
+    public function deletePaths(array $paths): void
+    {
+        if ($paths === []) {
+            return;
+        }
+
+        $disk = env('IMAGE_DISK', config('filesystems.default', 'public'));
+        $normalized = array_values(array_filter($paths, fn (mixed $path): bool => is_string($path) && $path !== ''));
+
+        foreach ($normalized as $path) {
+            Storage::disk($disk)->delete($path);
+        }
+    }
 }

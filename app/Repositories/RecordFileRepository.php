@@ -61,6 +61,17 @@ class RecordFileRepository
         return $normalized;
     }
 
+    public function delete(string $date): bool
+    {
+        $path = $this->pathForDate($date);
+
+        if (! $this->files->exists($path)) {
+            return false;
+        }
+
+        return $this->files->delete($path);
+    }
+
     /**
      * @return array<int, array<string, mixed>>
      */

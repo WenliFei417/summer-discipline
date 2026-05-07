@@ -29,9 +29,11 @@ class RecordController extends Controller
             }
         }
 
-        $record = $repository->findOrEmpty($date);
+        $existingRecord = $repository->find($date);
+        $record = $existingRecord ?? DateRecord::empty($date);
+        $hasRecord = $existingRecord !== null;
 
-        return view('records.form', compact('record', 'date'));
+        return view('records.form', compact('record', 'date', 'hasRecord'));
     }
 
     public function show(string $date, RecordFileRepository $repository): JsonResponse
@@ -117,5 +119,31 @@ class RecordController extends Controller
         ]);
 
         return redirect()->route('records.create', ['date' => $date])->with('status', "Record for {$date} updated.");
+    }
+
+    public function destroy(
+        string $date,
+        RecordFileRepository $repository,
+        ImageStorageService $imageStorageService
+    ): RedirectResponse
+    {
+        $record = $repository->find($date);
+        if ($record === null) {
+            return redirect()
+                ->route('records.create', ['date' => $date])
+                ->with('status', "No record found for {$date}.");
+        }
+
+        $paths = [];
+        foreach (($record['images'] ?? []) as $image) {
+            if (is_array($image) && isset($image['path']) && is_string($image['path']) && $image['path'] !== '') {
+                $paths[] = $image['path'];
+            }
+        }
+
+        $imageStorageService->deletePaths($paths);
+        $repository->delete($date);
+
+        return redirect()->route('calendar.index')->with('status', "Record for {$date} deleted.");
     }
 }
