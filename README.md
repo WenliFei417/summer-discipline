@@ -2,7 +2,7 @@
 
 A personal daily discipline journal built with Laravel, Blade, Alpine.js, and Tailwind CSS.
 
-The app is designed for a single owner: anyone can view calendar data, but creating and editing records requires login.
+The app is designed for a single owner: anyone can view calendar data, but creating, editing, and deleting records requires login.
 
 ## Tech Stack
 
@@ -10,7 +10,7 @@ The app is designed for a single owner: anyone can view calendar data, but creat
 - Laravel `^13.7`
 - Blade templates + Alpine.js
 - Tailwind CSS (CDN)
-- File-based JSON record storage
+- Database-backed daily record storage
 - Optional Cloudflare R2 (S3-compatible) for image files
 
 ## Features
@@ -21,7 +21,7 @@ The app is designed for a single owner: anyone can view calendar data, but creat
 - One record per date (`YYYY-MM-DD`)
 - Calendar short note + long-form ramblings
 - Health and study modules with optional ratings (`1-5`)
-- Owner-only write access (create, update, upload image)
+- Owner-only write access (create, update, delete, upload image)
 
 ## Project Structure
 
@@ -33,7 +33,7 @@ app/
     RecordImageController.php
     LoginController.php
   Repositories/
-    RecordFileRepository.php
+    RecordRepository.php
   Services/
     ImageStorageService.php
   Support/
@@ -46,19 +46,16 @@ resources/views/
   layouts/app.blade.php
 
 routes/web.php
-storage/app/records/          # Daily JSON records
-database/                     # SQLite file (users/sessions, if used)
+database/                     # SQLite file for records/auth locally
 ```
 
 ## Data Storage
 
-### 1) Daily record content (JSON, local filesystem)
+### 1) Daily record content (database)
 
-Records are stored as one file per day:
+Records are stored in `records` and `record_images` tables.
 
-- `storage/app/records/YYYY/YYYY-MM-DD.json`
-
-These JSON files store:
+Stored fields include:
 
 - `calendar_note`
 - `ramblings`
@@ -68,7 +65,7 @@ These JSON files store:
 
 ### 2) Authentication/session data (database)
 
-Owner authentication uses Laravel `users` table (default SQLite in local setup).
+Owner authentication uses Laravel `users` table in the same database.
 
 ### 3) Images
 
@@ -80,7 +77,7 @@ Image files are stored through the Laravel filesystem disk selected by `IMAGE_DI
 ## Access Model
 
 - Public (read): calendar page and record query APIs
-- Authenticated owner (write): create record, update record, upload image
+- Authenticated owner (write): create record, update record, delete record, upload image
 
 Current route behavior:
 
@@ -90,7 +87,13 @@ Current route behavior:
 - `GET /records/create` (auth)
 - `POST /records` (auth)
 - `PUT /records/{date}` (auth)
+- `DELETE /records/{date}` (auth)
 - `POST /records/{date}/images` (auth)
+
+Delete behavior:
+
+- Deleting a record removes the database row and its related `record_images` rows.
+- The app also attempts to delete related image objects from the configured `IMAGE_DISK` (for example Cloudflare R2 when `IMAGE_DISK=s3`).
 
 ## Local Setup
 
@@ -107,20 +110,25 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-3. Run migrations and seed owner user:
+3. Run migrations:
 
 ```bash
 php artisan migrate
+```
+
+4. (Optional, recommended) seed owner user:
+
+```bash
 php artisan db:seed
 ```
 
-4. Start development server:
+5. Start development server:
 
 ```bash
 php artisan serve
 ```
 
-5. Open:
+6. Open:
 
 - [http://127.0.0.1:8000/calendar](http://127.0.0.1:8000/calendar)
 
@@ -168,7 +176,7 @@ AWS_USE_PATH_STYLE_ENDPOINT=false
 - For personal local-only usage, deployment is optional.
 - If deploying:
   - set `APP_ENV=production`, `APP_DEBUG=false`, and real `APP_URL`
-  - ensure persistent storage for `storage/app/records` (and `database/database.sqlite` if using SQLite)
+  - ensure persistent storage for `database/database.sqlite` if using SQLite
   - rotate any leaked secrets before production release
 
 ## Security Notes

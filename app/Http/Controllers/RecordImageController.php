@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UploadRecordImageRequest;
-use App\Repositories\RecordFileRepository;
+use App\Repositories\RecordRepository;
 use App\Services\ImageStorageService;
 use App\Support\DateRecord;
 use Illuminate\Http\JsonResponse;
@@ -13,7 +13,7 @@ class RecordImageController extends Controller
     public function store(
         string $date,
         UploadRecordImageRequest $request,
-        RecordFileRepository $repository,
+        RecordRepository $repository,
         ImageStorageService $imageStorageService
     ): JsonResponse {
         $uploaded = $imageStorageService->upload($date, $request->file('image'));

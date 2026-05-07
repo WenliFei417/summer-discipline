@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreRecordRequest;
 use App\Http\Requests\UpdateRecordRequest;
-use App\Repositories\RecordFileRepository;
+use App\Repositories\RecordRepository;
 use App\Services\ImageStorageService;
 use App\Support\DateRecord;
 use Carbon\Carbon;
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RecordController extends Controller
 {
-    public function create(Request $request, RecordFileRepository $repository)
+    public function create(Request $request, RecordRepository $repository)
     {
         $today = Carbon::today()->format('Y-m-d');
         $raw = $request->query('date');
@@ -36,7 +36,7 @@ class RecordController extends Controller
         return view('records.form', compact('record', 'date', 'hasRecord'));
     }
 
-    public function show(string $date, RecordFileRepository $repository): JsonResponse
+    public function show(string $date, RecordRepository $repository): JsonResponse
     {
         $record = $repository->find($date);
 
@@ -47,7 +47,7 @@ class RecordController extends Controller
         return response()->json($record);
     }
 
-    public function range(Request $request, RecordFileRepository $repository): JsonResponse
+    public function range(Request $request, RecordRepository $repository): JsonResponse
     {
         $validated = $request->validate([
             'start' => ['required', 'date_format:Y-m-d'],
@@ -61,7 +61,7 @@ class RecordController extends Controller
 
     public function store(
         StoreRecordRequest $request,
-        RecordFileRepository $repository,
+        RecordRepository $repository,
         ImageStorageService $imageStorageService
     ): RedirectResponse {
         $data = $request->validated();
@@ -93,7 +93,7 @@ class RecordController extends Controller
     public function update(
         string $date,
         UpdateRecordRequest $request,
-        RecordFileRepository $repository,
+        RecordRepository $repository,
         ImageStorageService $imageStorageService
     ): RedirectResponse {
         $data = $request->validated();
@@ -123,7 +123,7 @@ class RecordController extends Controller
 
     public function destroy(
         string $date,
-        RecordFileRepository $repository,
+        RecordRepository $repository,
         ImageStorageService $imageStorageService
     ): RedirectResponse
     {

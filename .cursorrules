@@ -15,16 +15,15 @@
   - Optional long-form ramblings text per day.
 
 ## Data and Storage
-- Prefer file-based JSON storage for records (one file per date).
-- Record path convention: `storage/app/records/YYYY/YYYY-MM-DD.json`.
+- Prefer database storage for records, one row per date.
 - Use Cloudflare R2 for image storage via Laravel S3-compatible disk.
-- Record files store image URLs and metadata only, never binary image data.
+- Record rows store image URLs and metadata only, never binary image data.
 - Ratings are integers only: 1-5 (or null).
 
 ## Routing and Architecture
-- Keep routes minimal and explicit: calendar, day detail, range query, create/update, image upload.
+- Keep routes minimal and explicit: calendar, day detail, range query, create/update/delete, image upload.
 - Keep controllers thin.
-- Put file read/write logic in a repository (for example `RecordFileRepository`).
+- Put record read/write logic in a repository (for example `RecordRepository`).
 - Put image upload logic in a dedicated service (for example `ImageStorageService`).
 
 ## Validation Rules
