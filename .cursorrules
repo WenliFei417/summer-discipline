@@ -1,0 +1,46 @@
+# Summer Discipline App Rules
+
+## Tech Stack
+- Use PHP with Laravel 11.
+- Use Blade + Alpine.js + Tailwind CSS.
+- Keep implementation simple and maintainable for a single-user app.
+
+## Product Scope
+- Core flows only:
+  - Calendar month view.
+  - Click a day to view that day's notes.
+  - Query records by date range.
+  - Create/update one record per day.
+  - Optional image attachments for daily records.
+  - Optional long-form ramblings text per day.
+
+## Data and Storage
+- Prefer file-based JSON storage for records (one file per date).
+- Record path convention: `storage/app/records/YYYY/YYYY-MM-DD.json`.
+- Use Cloudflare R2 for image storage via Laravel S3-compatible disk.
+- Record files store image URLs and metadata only, never binary image data.
+- Ratings are integers only: 1-5 (or null).
+
+## Routing and Architecture
+- Keep routes minimal and explicit: calendar, day detail, range query, create/update, image upload.
+- Keep controllers thin.
+- Put file read/write logic in a repository (for example `RecordFileRepository`).
+- Put image upload logic in a dedicated service (for example `ImageStorageService`).
+
+## Validation Rules
+- Validate all write endpoints with FormRequest.
+- `record_date` must be a valid date.
+- Ratings must be nullable integer between 1 and 5.
+- Image upload should validate mime type and file size.
+
+## UI and UX
+- Keep UI minimal, clean, and portfolio-friendly.
+- Prioritize readability over feature density.
+- The calendar is the main entry point.
+- Day detail and date-range review must be easy to access.
+- Ensure responsive behavior on mobile screens.
+
+## Engineering Preferences
+- Avoid over-engineering and unnecessary abstraction.
+- Prefer clarity and maintainability over clever code.
+- Add concise comments only for non-obvious logic.
