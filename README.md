@@ -16,8 +16,9 @@ The app is designed for a single owner: anyone can view calendar data, but creat
 ## Features
 
 - Monthly calendar heatmap with multiple color modes (overall, health, study)
-- Day detail modal with notes and image preview
-- Date-range query with quick filters (this week / this month / recent 10 days)
+- Day detail modal with in-page image preview overlay
+- Search popover with optional keyword, optional date range, and section filters (`health`, `study`, `ramblings`, `note`)
+- Quick filters for `This Week` and `This Month`
 - One record per date (`YYYY-MM-DD`)
 - Calendar short note + long-form ramblings
 - Health and study modules with optional ratings (`1-5`)
@@ -83,6 +84,7 @@ Current route behavior:
 
 - `GET /calendar` (public)
 - `GET /records/range` (public)
+- `GET /records/search` (public)
 - `GET /records/{date}` (public)
 - `GET /records/create` (auth)
 - `POST /records` (auth)
