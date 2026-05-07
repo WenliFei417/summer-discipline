@@ -49,6 +49,7 @@ class RecordRepository
         $record = Record::updateOrCreate(
             ['record_date' => $date],
             [
+                'level' => $normalized['level'],
                 'calendar_note' => $normalized['calendar_note'],
                 'ramblings' => $normalized['ramblings'],
                 'health' => $normalized['health'],
@@ -209,6 +210,7 @@ class RecordRepository
     private function normalizePayload(string $date, array $payload): array
     {
         $base = DateRecord::empty($date);
+        $base['level'] = (int) Arr::get($payload, 'level', 0);
         $base['calendar_note'] = Arr::get($payload, 'calendar_note');
         $base['ramblings'] = Arr::get($payload, 'ramblings');
         $base['health'] = array_merge($base['health'], Arr::get($payload, 'health', []));
@@ -251,22 +253,7 @@ class RecordRepository
             return 0;
         }
 
-        $health = Arr::get($record, 'health.rating');
-        $study = Arr::get($record, 'study.rating');
-
-        if ($health === null && $study === null) {
-            return 1;
-        }
-
-        if ($health === null) {
-            return (int) $study;
-        }
-
-        if ($study === null) {
-            return (int) $health;
-        }
-
-        return (int) ceil((((int) $health) + ((int) $study)) / 2);
+        return max(0, min(5, (int) Arr::get($record, 'level', 0)));
     }
 
     /**
@@ -292,6 +279,7 @@ class RecordRepository
 
         return [
             'date' => $record->record_date->toDateString(),
+            'level' => (int) ($record->level ?? 0),
             'calendar_note' => $record->calendar_note,
             'ramblings' => $record->ramblings,
             'health' => is_array($record->health) ? $record->health : [],

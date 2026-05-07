@@ -22,9 +22,24 @@
 
         <form method="POST" action="{{ route('records.store') }}" enctype="multipart/form-data" class="space-y-6 rounded-xl border border-slate-200 bg-white p-5">
             @csrf
-            <div>
-                <label class="mb-1 block text-sm font-medium">Date</label>
-                <input type="date" name="record_date" value="{{ old('record_date', $date) }}" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" required>
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <label class="mb-1 block text-sm font-medium">Date</label>
+                    <input type="date" name="record_date" value="{{ old('record_date', $date) }}" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" required>
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-medium">Daily Level (0-5)</label>
+                    <input
+                        type="number"
+                        name="level"
+                        min="0"
+                        max="5"
+                        value="{{ old('level', data_get($record, 'level', 0)) }}"
+                        class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                        placeholder="0 means no color on calendar"
+                    >
+                </div>
             </div>
 
             <div>
@@ -41,28 +56,33 @@
 
             <div>
                 <label class="mb-1 block text-sm font-medium">Ramblings</label>
-                <textarea
+                <input
+                    type="text"
                     name="ramblings"
-                    rows="5"
+                    value="{{ old('ramblings', data_get($record, 'ramblings')) }}"
                     class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
                     placeholder="Free-form notes—feelings, small wins, moods, whatever happened today."
-                >{{ old('ramblings', data_get($record, 'ramblings')) }}</textarea>
+                >
             </div>
 
             <div class="grid gap-5 md:grid-cols-2">
                 <div class="space-y-3">
-                    <h2 class="text-lg font-semibold">Health</h2>
-                    <textarea name="health[workout]" rows="3" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Workout note">{{ old('health.workout', data_get($record, 'health.workout')) }}</textarea>
-                    <textarea name="health[diet]" rows="3" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Diet note">{{ old('health.diet', data_get($record, 'health.diet')) }}</textarea>
-                    <textarea name="health[sleep]" rows="3" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Sleep note">{{ old('health.sleep', data_get($record, 'health.sleep')) }}</textarea>
-                    <input type="number" name="health[rating]" min="1" max="5" value="{{ old('health.rating', data_get($record, 'health.rating')) }}" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Health rating 1-5">
+                    <div class="flex items-center justify-between gap-3">
+                        <h2 class="text-lg font-semibold">Health</h2>
+                        <input type="number" name="health[rating]" min="1" max="5" value="{{ old('health.rating', data_get($record, 'health.rating')) }}" class="w-24 rounded border border-slate-300 px-2 py-1.5 text-sm" placeholder="1-5">
+                    </div>
+                    <input type="text" name="health[workout]" value="{{ old('health.workout', data_get($record, 'health.workout')) }}" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Workout note">
+                    <input type="text" name="health[diet]" value="{{ old('health.diet', data_get($record, 'health.diet')) }}" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Diet note">
+                    <input type="text" name="health[sleep]" value="{{ old('health.sleep', data_get($record, 'health.sleep')) }}" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Sleep note">
                 </div>
                 <div class="space-y-3">
-                    <h2 class="text-lg font-semibold">Study</h2>
-                    <textarea name="study[leetcode]" rows="3" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="LeetCode note">{{ old('study.leetcode', data_get($record, 'study.leetcode')) }}</textarea>
-                    <textarea name="study[system_design]" rows="3" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="System design note">{{ old('study.system_design', data_get($record, 'study.system_design')) }}</textarea>
-                    <textarea name="study[courses]" rows="3" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Courses, tutorials, etc.">{{ old('study.courses', data_get($record, 'study.courses', data_get($record, 'study.other'))) }}</textarea>
-                    <input type="number" name="study[rating]" min="1" max="5" value="{{ old('study.rating', data_get($record, 'study.rating')) }}" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Study rating 1-5">
+                    <div class="flex items-center justify-between gap-3">
+                        <h2 class="text-lg font-semibold">Study</h2>
+                        <input type="number" name="study[rating]" min="1" max="5" value="{{ old('study.rating', data_get($record, 'study.rating')) }}" class="w-24 rounded border border-slate-300 px-2 py-1.5 text-sm" placeholder="1-5">
+                    </div>
+                    <input type="text" name="study[leetcode]" value="{{ old('study.leetcode', data_get($record, 'study.leetcode')) }}" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="LeetCode note">
+                    <input type="text" name="study[system_design]" value="{{ old('study.system_design', data_get($record, 'study.system_design')) }}" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="System design note">
+                    <input type="text" name="study[courses]" value="{{ old('study.courses', data_get($record, 'study.courses', data_get($record, 'study.other'))) }}" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Courses, tutorials, etc.">
                 </div>
             </div>
 

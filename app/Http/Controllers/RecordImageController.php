@@ -28,6 +28,7 @@ class RecordImageController extends Controller
         ];
 
         $record = $repository->save($date, [
+            'level' => $record['level'] ?? 0,
             'calendar_note' => $record['calendar_note'] ?? null,
             'ramblings' => $record['ramblings'] ?? null,
             'health' => $record['health'] ?? [],

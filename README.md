@@ -20,6 +20,7 @@ The app is designed for a single owner: anyone can view calendar data, but creat
 - Search popover with optional keyword, optional date range, and section filters (`health`, `study`, `ramblings`, `note`)
 - Quick filters for `This Week` and `This Month`
 - One record per date (`YYYY-MM-DD`)
+- Manual daily level (`0-5`) for calendar color; default is `0` (no color)
 - Calendar short note + long-form ramblings
 - Health and study modules with optional ratings (`1-5`)
 - Owner-only write access (create, update, delete, upload image)
@@ -58,6 +59,7 @@ Records are stored in `records` and `record_images` tables.
 
 Stored fields include:
 
+- `level` (manual `0-5`, default `0`)
 - `calendar_note`
 - `ramblings`
 - `health` section
@@ -96,6 +98,12 @@ Delete behavior:
 
 - Deleting a record removes the database row and its related `record_images` rows.
 - The app also attempts to delete related image objects from the configured `IMAGE_DISK` (for example Cloudflare R2 when `IMAGE_DISK=s3`).
+
+Search behavior:
+
+- Keyword is optional.
+- Date range is optional. If no date range is set, search runs across all dates.
+- Section filters are multi-select and optional; if none are selected, all sections are searched.
 
 ## Local Setup
 

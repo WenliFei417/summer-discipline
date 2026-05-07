@@ -120,6 +120,7 @@ class RecordController extends Controller
         }
 
         $repository->save($date, [
+            'level' => $data['level'] ?? 0,
             'calendar_note' => $data['calendar_note'] ?? null,
             'ramblings' => $data['ramblings'] ?? null,
             'health' => $data['health'] ?? [],
@@ -151,6 +152,7 @@ class RecordController extends Controller
         }
 
         $repository->save($date, [
+            'level' => $data['level'] ?? ($existing['level'] ?? 0),
             'calendar_note' => $data['calendar_note'] ?? ($existing['calendar_note'] ?? null),
             'ramblings' => $data['ramblings'] ?? ($existing['ramblings'] ?? null),
             'health' => $data['health'] ?? [],

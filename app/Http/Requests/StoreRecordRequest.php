@@ -15,6 +15,7 @@ class StoreRecordRequest extends FormRequest
     {
         return [
             'record_date' => ['required', 'date_format:Y-m-d'],
+            'level' => ['nullable', 'integer', 'between:0,5'],
             'calendar_note' => ['nullable', 'string', 'max:80'],
             'ramblings' => ['nullable', 'string', 'max:10000'],
             'health.workout' => ['nullable', 'string'],

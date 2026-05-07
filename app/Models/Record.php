@@ -9,6 +9,7 @@ class Record extends Model
 {
     protected $fillable = [
         'record_date',
+        'level',
         'calendar_note',
         'ramblings',
         'health',
@@ -17,6 +18,7 @@ class Record extends Model
 
     protected $casts = [
         'record_date' => 'date:Y-m-d',
+        'level' => 'integer',
         'health' => 'array',
         'study' => 'array',
     ];

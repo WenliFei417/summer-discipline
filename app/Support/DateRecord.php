@@ -11,6 +11,7 @@ final class DateRecord
     {
         return [
             'date' => $date,
+            'level' => 0,
             'calendar_note' => null,
             'ramblings' => null,
             'health' => [
