@@ -21,7 +21,6 @@
 @section('content')
     <div
         x-data="calendarPage('{{ $month->format('Y-m') }}', @js($cardMap))"
-        x-init="loadRecentTenDays()"
         class="space-y-6"
     >
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -29,28 +28,81 @@
                 <h1 class="text-2xl font-semibold">Discipline Calendar</h1>
                 <p class="text-sm text-slate-500">Click a date to view notes. Use quick search for recent records.</p>
             </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-2">
                 <button
                     type="button"
                     @click="loadQuickRange('week')"
-                    class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                    class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
                 >
                     This Week
                 </button>
                 <button
                     type="button"
                     @click="loadQuickRange('month')"
-                    class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                    class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
                 >
                     This Month
                 </button>
-                <button
-                    type="button"
-                    @click="showMiniSearch = !showMiniSearch"
-                    class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
-                >
-                    Advanced Search
-                </button>
+                <div class="relative">
+                    <button
+                        type="button"
+                        @click="showSearchPanel = !showSearchPanel; showSectionMenu = false"
+                        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                    >
+                        Search
+                    </button>
+                    <div
+                        x-show="showSearchPanel"
+                        x-cloak
+                        @click.outside="showSearchPanel = false; showSectionMenu = false"
+                        class="absolute left-0 z-30 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] rounded-lg border border-slate-200 bg-white p-3 shadow-lg"
+                    >
+                        <div class="space-y-2">
+                            <input
+                                x-model="searchKeyword"
+                                type="text"
+                                placeholder="Keyword (optional)"
+                                @keydown.enter.prevent="searchRecords()"
+                                class="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 placeholder:text-slate-400"
+                            >
+                            <div class="grid grid-cols-2 gap-2">
+                                <input x-model="searchStart" type="date" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700">
+                                <input x-model="searchEnd" type="date" class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700">
+                            </div>
+                            <div class="relative">
+                                <button
+                                    type="button"
+                                    @click="showSectionMenu = !showSectionMenu"
+                                    class="w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-100"
+                                >
+                                    Sections (<span x-text="searchSections.length"></span>)
+                                </button>
+                                <div
+                                    x-show="showSectionMenu"
+                                    x-cloak
+                                    class="mt-1 rounded-md border border-slate-200 bg-white p-2"
+                                >
+                                    <label class="mb-1 flex items-center gap-2 text-xs text-slate-700"><input type="checkbox" value="health" x-model="searchSections" class="h-3 w-3">Health</label>
+                                    <label class="mb-1 flex items-center gap-2 text-xs text-slate-700"><input type="checkbox" value="study" x-model="searchSections" class="h-3 w-3">Study</label>
+                                    <label class="mb-1 flex items-center gap-2 text-xs text-slate-700"><input type="checkbox" value="ramblings" x-model="searchSections" class="h-3 w-3">Ramblings</label>
+                                    <label class="flex items-center gap-2 text-xs text-slate-700"><input type="checkbox" value="calendar_note" x-model="searchSections" class="h-3 w-3">Note</label>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                @click="searchRecords()"
+                                class="w-full rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700"
+                            >
+                                Apply Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
                 @auth
                     <a
                         href="{{ route('records.create') }}"
@@ -67,26 +119,6 @@
                         Sign in to edit
                     </a>
                 @endauth
-            </div>
-        </div>
-
-        <div
-            x-show="showMiniSearch"
-            x-cloak
-            class="rounded-lg border border-slate-200 bg-white p-3"
-        >
-            <div class="grid gap-2 md:grid-cols-4">
-                <div>
-                    <label class="mb-1 block text-[11px] text-slate-500">Start</label>
-                    <input x-model="rangeStart" type="date" class="w-full rounded border border-slate-300 px-2 py-1.5 text-xs">
-                </div>
-                <div>
-                    <label class="mb-1 block text-[11px] text-slate-500">End</label>
-                    <input x-model="rangeEnd" type="date" class="w-full rounded border border-slate-300 px-2 py-1.5 text-xs">
-                </div>
-                <div class="md:col-span-2 flex items-end">
-                    <button @click="loadRange()" class="rounded bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-700">Search</button>
-                </div>
             </div>
         </div>
 
@@ -175,11 +207,11 @@
         <div class="rounded-xl border border-slate-200 bg-white p-4">
             <div class="mb-4 flex items-center justify-between">
                 <h3 class="text-lg font-semibold">Range Results</h3>
-                <p class="text-xs text-slate-500" x-show="hasSearched" x-text="`${rangeStart} ~ ${rangeEnd}`"></p>
+                <p class="text-xs text-slate-500" x-show="hasSearched" x-text="searchMetaText"></p>
             </div>
 
             <template x-if="hasSearched && rangeItems.length === 0">
-                <p class="text-sm text-slate-500">No records in range.</p>
+                <p class="text-sm text-slate-500">No matching records.</p>
             </template>
 
             <template x-if="!hasSearched">
@@ -232,9 +264,9 @@
 
                             <div class="grid w-full grid-cols-3 gap-2 md:w-48" x-show="(item.images || []).length > 0" @click.stop>
                                 <template x-for="(img, idx) in (item.images || []).slice(0, 3)" :key="idx">
-                                    <a :href="img.url" target="_blank" class="block overflow-hidden rounded border border-slate-200">
+                                    <button type="button" @click.stop="openImagePreview(img.url)" class="block overflow-hidden rounded border border-slate-200">
                                         <img :src="img.url" class="h-16 w-full object-cover" alt="range image">
-                                    </a>
+                                    </button>
                                 </template>
                             </div>
                         </div>
@@ -294,9 +326,9 @@
                     <h4 class="text-sm font-semibold">Images</h4>
                     <div class="mt-2 grid grid-cols-2 gap-3 md:grid-cols-4">
                         <template x-for="(img, idx) in (selected?.images || [])" :key="idx">
-                            <a :href="img.url" target="_blank" class="block overflow-hidden rounded border border-slate-200">
+                            <button type="button" @click="openImagePreview(img.url)" class="block overflow-hidden rounded border border-slate-200">
                                 <img :src="img.url" class="h-20 w-full object-cover" alt="daily image">
-                            </a>
+                            </button>
                         </template>
                     </div>
                     <p x-show="(selected?.images || []).length === 0" class="text-xs text-slate-500">No images.</p>
@@ -308,6 +340,21 @@
                 @endauth
             </div>
         </div>
+
+        <div x-show="showImagePreview" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" @click="closeImagePreview()">
+            <div class="relative max-h-[90vh] max-w-[90vw]" @click.stop>
+                <button
+                    type="button"
+                    class="absolute -right-2 -top-2 h-8 w-8 rounded-full bg-white text-lg leading-8 text-slate-700 shadow hover:bg-slate-100"
+                    @click="closeImagePreview()"
+                    aria-label="Close image preview"
+                    title="Close"
+                >
+                    &times;
+                </button>
+                <img :src="previewImageUrl" alt="preview image" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl">
+            </div>
+        </div>
     </div>
 
     <script>
@@ -316,11 +363,17 @@
             return {
                 showModal: false,
                 selected: null,
-                rangeStart: today,
-                rangeEnd: today,
+                showImagePreview: false,
+                previewImageUrl: '',
+                searchStart: '',
+                searchEnd: '',
+                searchKeyword: '',
+                searchSections: ['health', 'study', 'ramblings', 'calendar_note'],
                 rangeItems: [],
                 hasSearched: false,
-                showMiniSearch: false,
+                searchMetaText: '',
+                showSearchPanel: false,
+                showSectionMenu: false,
                 showMonthPicker: false,
                 jumpMonthValue: currentMonth,
                 calendarMetric: 'level',
@@ -346,31 +399,23 @@
                     monday.setDate(now.getDate() - day + 1);
                     const sunday = new Date(monday);
                     sunday.setDate(monday.getDate() + 6);
-                    this.rangeStart = this.toDateInput(monday);
-                    this.rangeEnd = this.toDateInput(sunday);
+                    this.searchStart = this.toDateInput(monday);
+                    this.searchEnd = this.toDateInput(sunday);
                 },
                 setMonthRange() {
                     const now = new Date();
                     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
                     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-                    this.rangeStart = this.toDateInput(firstDay);
-                    this.rangeEnd = this.toDateInput(lastDay);
+                    this.searchStart = this.toDateInput(firstDay);
+                    this.searchEnd = this.toDateInput(lastDay);
                 },
-                async loadQuickRange(mode) {
+                loadQuickRange(mode) {
                     if (mode === 'week') {
                         this.setWeekRange();
                     } else if (mode === 'month') {
                         this.setMonthRange();
                     }
-                    await this.loadRange();
-                },
-                loadRecentTenDays() {
-                    const now = new Date();
-                    const start = new Date(now);
-                    start.setDate(now.getDate() - 9);
-                    this.rangeStart = this.toDateInput(start);
-                    this.rangeEnd = this.toDateInput(now);
-                    this.loadRange();
+                    this.searchRecords();
                 },
                 dayStyle(date) {
                     const card = this.cardMap?.[date] || {};
@@ -406,13 +451,42 @@
                     this.selected = await response.json();
                     this.showModal = true;
                 },
-                async loadRange() {
+                openImagePreview(url) {
+                    if (!url) {
+                        return;
+                    }
+                    this.previewImageUrl = url;
+                    this.showImagePreview = true;
+                },
+                closeImagePreview() {
+                    this.showImagePreview = false;
+                    this.previewImageUrl = '';
+                },
+                async searchRecords() {
+                    const keyword = (this.searchKeyword || '').trim();
+
                     this.hasSearched = true;
+                    this.showSearchPanel = false;
+                    this.showSectionMenu = false;
+                    const sectionLabel = (this.searchSections || []).join(', ') || 'all';
+                    const hasDateRange = this.searchStart && this.searchEnd;
+                    const dateText = hasDateRange ? `${this.searchStart} ~ ${this.searchEnd}` : 'All dates';
+                    this.searchMetaText = keyword
+                        ? `${dateText} | "${keyword}" in ${sectionLabel}`
+                        : dateText;
+
                     const params = new URLSearchParams({
-                        start: this.rangeStart,
-                        end: this.rangeEnd
+                        q: this.searchKeyword || '',
                     });
-                    const response = await fetch(`/records/range?${params.toString()}`);
+                    if (this.searchStart && this.searchEnd) {
+                        params.set('start', this.searchStart);
+                        params.set('end', this.searchEnd);
+                    }
+                    (this.searchSections || []).forEach((section) => {
+                        params.append('sections[]', section);
+                    });
+
+                    const response = await fetch(`/records/search?${params.toString()}`);
                     const data = await response.json();
                     this.rangeItems = data.items || [];
                 },

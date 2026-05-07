@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Record;
 use App\Support\DateRecord;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
@@ -100,6 +101,63 @@ class RecordRepository
 
         return Record::with('images')
             ->whereBetween('record_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->orderByDesc('record_date')
+            ->get()
+            ->map(fn (Record $record): array => $this->toPayload($record))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<int, string>  $sections
+     * @return array<int, array<string, mixed>>
+     */
+    public function search(string $keyword, string $start, string $end, array $sections = []): array
+    {
+        if (! $this->recordsTableExists()) {
+            return [];
+        }
+
+        $startDate = Carbon::createFromFormat('Y-m-d', $start)->startOfDay();
+        $endDate = Carbon::createFromFormat('Y-m-d', $end)->startOfDay();
+        if ($startDate->greaterThan($endDate)) {
+            throw new InvalidArgumentException('Start date must be before end date.');
+        }
+
+        $allowedSections = ['health', 'study', 'ramblings', 'calendar_note'];
+        $selected = array_values(array_intersect($allowedSections, $sections));
+        if ($selected === []) {
+            $selected = $allowedSections;
+        }
+
+        $likeKeyword = '%'.str_replace(['%', '_'], ['\\%', '\\_'], trim($keyword)).'%';
+
+        $query = Record::with('images')
+            ->whereBetween('record_date', [$startDate->toDateString(), $endDate->toDateString()]);
+
+        $query->where(function (Builder $builder) use ($selected, $likeKeyword): void {
+            if (in_array('calendar_note', $selected, true)) {
+                $builder->orWhere('calendar_note', 'like', $likeKeyword);
+            }
+
+            if (in_array('ramblings', $selected, true)) {
+                $builder->orWhere('ramblings', 'like', $likeKeyword);
+            }
+
+            if (in_array('health', $selected, true)) {
+                $builder->orWhereRaw("json_extract(health, '$.workout') like ?", [$likeKeyword])
+                    ->orWhereRaw("json_extract(health, '$.diet') like ?", [$likeKeyword])
+                    ->orWhereRaw("json_extract(health, '$.sleep') like ?", [$likeKeyword]);
+            }
+
+            if (in_array('study', $selected, true)) {
+                $builder->orWhereRaw("json_extract(study, '$.leetcode') like ?", [$likeKeyword])
+                    ->orWhereRaw("json_extract(study, '$.system_design') like ?", [$likeKeyword])
+                    ->orWhereRaw("json_extract(study, '$.courses') like ?", [$likeKeyword]);
+            }
+        });
+
+        return $query
             ->orderByDesc('record_date')
             ->get()
             ->map(fn (Record $record): array => $this->toPayload($record))

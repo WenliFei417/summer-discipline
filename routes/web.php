@@ -20,6 +20,7 @@ Route::post('/logout', [LoginController::class, 'logout'])
     ->name('logout');
 
 Route::get('/records/range', [RecordController::class, 'range'])->name('records.range');
+Route::get('/records/search', [RecordController::class, 'search'])->name('records.search');
 Route::get('/records/{date}', [RecordController::class, 'show'])
     ->where('date', '\d{4}-\d{2}-\d{2}')
     ->name('records.show');

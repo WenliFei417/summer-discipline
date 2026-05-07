@@ -102,4 +102,43 @@ class ExampleTest extends TestCase
             ->assertJsonPath('date', '2026-05-07')
             ->assertJsonPath('calendar_note', null);
     }
+
+    public function test_search_can_filter_keyword_and_sections(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('records.store'), [
+            'record_date' => '2026-05-06',
+            'calendar_note' => 'steady day',
+            'ramblings' => 'did focused breathing practice',
+            'health' => ['workout' => 'stretching', 'rating' => 4],
+            'study' => ['leetcode' => 'hash map', 'rating' => 3],
+        ]);
+
+        $this->actingAs($user)->post(route('records.store'), [
+            'record_date' => '2026-05-07',
+            'calendar_note' => 'interview prep',
+            'ramblings' => 'system design deep dive',
+            'health' => ['workout' => 'run', 'rating' => 5],
+            'study' => ['leetcode' => 'design patterns practice', 'rating' => 5],
+        ]);
+
+        $this->getJson(route('records.search', [
+            'q' => 'design',
+            'start' => '2026-05-01',
+            'end' => '2026-05-31',
+            'sections' => ['study'],
+        ]))
+            ->assertOk()
+            ->assertJsonCount(1, 'items')
+            ->assertJsonPath('items.0.date', '2026-05-07');
+
+        $this->getJson(route('records.search', [
+            'q' => 'design',
+            'sections' => ['study'],
+        ]))
+            ->assertOk()
+            ->assertJsonCount(1, 'items')
+            ->assertJsonPath('items.0.date', '2026-05-07');
+    }
 }

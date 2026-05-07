@@ -59,6 +59,46 @@ class RecordController extends Controller
         ]);
     }
 
+    public function search(Request $request, RecordRepository $repository): JsonResponse
+    {
+        $validated = $request->validate([
+            'q' => ['nullable', 'string', 'max:120'],
+            'start' => ['nullable', 'date_format:Y-m-d'],
+            'end' => ['nullable', 'date_format:Y-m-d'],
+            'sections' => ['nullable', 'array'],
+            'sections.*' => ['string', 'in:health,study,ramblings,calendar_note'],
+        ]);
+
+        $start = $validated['start'] ?? null;
+        $end = $validated['end'] ?? null;
+        $hasDateRange = is_string($start) && $start !== '' && is_string($end) && $end !== '';
+        if ($hasDateRange && $start > $end) {
+            return response()->json([
+                'message' => 'The end date must be on or after the start date.',
+                'errors' => ['end' => ['The end date must be on or after the start date.']],
+            ], 422);
+        }
+
+        $effectiveStart = $hasDateRange ? $start : '1900-01-01';
+        $effectiveEnd = $hasDateRange ? $end : '2999-12-31';
+
+        $keyword = trim((string) ($validated['q'] ?? ''));
+        if ($keyword === '') {
+            return response()->json([
+                'items' => $repository->range($effectiveStart, $effectiveEnd),
+            ]);
+        }
+
+        return response()->json([
+            'items' => $repository->search(
+                $keyword,
+                $effectiveStart,
+                $effectiveEnd,
+                $validated['sections'] ?? []
+            ),
+        ]);
+    }
+
     public function store(
         StoreRecordRequest $request,
         RecordRepository $repository,
